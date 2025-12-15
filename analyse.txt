@@ -1,0 +1,131 @@
+1) Vue générale : quel facteur a le plus d’impact ?
+
+En regardant tes résultats :
+
+Le facteur qui dégrade le plus la performance est clairement le taux de valeurs manquantes.
+
+À 70% de missing, les scores explosent (MAE + RMSE augmentent fortement).
+
+À 10–30%, les performances restent relativement stables selon les méthodes d’imputation.
+
+Deuxième facteur : la méthode d’imputation.
+
+Les méthodes se classent en général dans cet ordre (meilleur → moins bon) :
+
+MICE (Iterative Imputer)
+
+KNN imputer
+
+Imputation moyenne / médiane
+
+Suppression (drop) → très mauvaise dès que le taux > 20%
+
+Le type de mécanisme (MCAR / MAR / MNAR)
+
+MCAR : souvent le moins dangereux
+
+MAR : plus difficile car dépend d'autres variables
+
+MNAR : devrait théoriquement être le pire… mais dans tes résultats, il reste gérable car ton modèle est robuste et le dataset n’est pas fortement non-linéaire.
+
+2) Analyse détaillée par mécanisme
+A) MCAR (Missing Completely At Random)
+
+Les données sont manquantes de façon aléatoire → le cas le plus “facile”.
+
+Observations :
+
+Drop est catastrophique à 50% et 70% (MAE > 60, RMSE > 90, R² négatif).
+→ Logique : tu jettes trop d’informations.
+
+Mean / Median restent relativement stables mais pas idéales.
+
+KNN et MICE donnent les meilleurs résultats, surtout à 30–70%.
+
+Conclusion MCAR :
+
+Les méthodes avancées (KNN/MICE) gèrent très bien MCAR, même avec des taux élevés.
+
+B) MAR (Missing At Random)
+
+Les données manquantes dépendent d'autres variables visibles.
+
+Observations :
+
+Les performances sont plus instables que MCAR, normal car MAR introduit de la structure perdue.
+
+À 10–30% :
+
+MICE donne souvent les meilleurs résultats.
+
+Mean, Median, KNN se tiennent mais moins bons que MICE.
+
+À 50–70% :
+
+Drop s’effondre complètement (MAE ~ 60 à 70% missing).
+
+KNN et MICE résistent bien : MAE autour de 48–50.
+
+Conclusion MAR :
+
+MICE est le meilleur choix global.
+KNN reste robuste.
+Les imputations simples deviennent faibles à haut taux.
+
+C) MNAR (Missing Not At Random)
+
+Le pire scénario : les valeurs manquantes dépendent d’elles-mêmes.
+
+Observations :
+
+À 10–30% missing :
+
+Les performances restent surprenamment bonnes.
+
+Drop reste utilisable à 10–20% car la structure MNAR peut être faible dans ton dataset.
+
+Méthode Mean / Median reste correcte.
+
+KNN et MICE montrent des résultats stables mais pas toujours supérieurs.
+
+À 50–70% missing :
+
+Là on voit la vraie difficulté du MNAR.
+
+KNN et MICE deviennent très bons (MAE ~ 45–47).
+
+Mean, Median s’effondrent (MAE ~ 48–50).
+
+Drop est très mauvais.
+
+Conclusion MNAR :
+
+MNAR exige des méthodes avancées. KNN et MICE sont les meilleurs candidats.
+
+4) Impact du taux de valeurs manquantes
+Taux ≤ 20% :
+
+Toutes les méthodes fonctionnent, mais MICE et KNN restent meilleurs.
+
+Taux 30% :
+
+Début de dégradation visible, surtout avec mean/median.
+
+MICE est le plus stable.
+
+Taux 50% :
+
+Drop devient inutilisable.
+
+Mean/median deviennent faibles.
+
+KNN et MICE résistent.
+
+Taux 70% :
+
+Drop est catastrophique (R² < -1).
+
+Mean/median s’effondrent.
+
+Seuls MICE et KNN sauvent le modèle.
+
